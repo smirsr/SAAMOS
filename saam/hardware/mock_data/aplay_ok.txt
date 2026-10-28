@@ -1,0 +1,4 @@
+**** List of PLAYBACK Hardware Devices ****
+card 0: ExampleCodec [example-codec], device 0: Example Playback [Example Playback]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0

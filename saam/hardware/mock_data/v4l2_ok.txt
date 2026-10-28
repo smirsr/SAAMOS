@@ -1,0 +1,4 @@
+Example USB Camera (usb-example-1):
+	/dev/video0
+	/dev/video1
+	/dev/media0
