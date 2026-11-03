@@ -2,12 +2,20 @@
 
 handle_command(text) is the entry point described in docs/integration-guide.md.
 Until the real vision module is ready, it uses MockVision so the controller can
-be run and tested on its own.
+be run and tested on its own. The prototype starts with rule-based parsing and
+mock vision; the SLM is optional (see slm_engine.py).
 
 Run the demo from the repository root:
 
     python -m saam.core.controller
     python -m saam.core.controller --interactive
+
+How STOP reaches the audio side
+-------------------------------
+The controller does not own the speaker or the microphone. When the user says
+stop, handle_command() calls the on_stop callback it was given. The audio
+owner passes in a function (proposed name: stop_speaking) that cuts off any
+speech that is playing. See "STOP and the audio loop" in the integration guide.
 """
 
 import argparse
@@ -15,7 +23,8 @@ import logging
 from typing import Callable, Dict, List, Optional
 
 from .intent_parser import DESCRIBE_SCENE, FIND_OBJECT, STOP, parse_intent
-from .response_builder import build_response
+from .object_labels import is_supported_label
+from .response_builder import build_response, unsupported_object_response
 
 LOGGER = logging.getLogger(__name__)
 
@@ -55,6 +64,8 @@ def handle_command(
     detect_object / describe_scene default to the mock vision functions.
     on_stop is called when the user says stop (e.g. to cut off speech).
     Never raises: a failing module produces a spoken error message instead.
+    A vision failure (exception, error dict, or bad return value) is reported
+    as a camera problem, never as "nothing found" or an empty scene.
     """
     if detect_object is None or describe_scene is None:
         mock = MockVision()
@@ -72,18 +83,21 @@ def handle_command(
             except Exception:
                 LOGGER.exception("on_stop callback failed")
     elif name == FIND_OBJECT:
+        target = intent["target"]
+        if not is_supported_label(target):
+            return unsupported_object_response(target)
         try:
-            vision_result = detect_object(intent["target"])
+            vision_result = detect_object(target)
         except Exception:
             LOGGER.exception("vision detect_object failed")
-            vision_result = {"object": intent["target"], "detected": False,
+            vision_result = {"object": target, "detected": False,
                              "error": "VISION_ERROR"}
     elif name == DESCRIBE_SCENE:
         try:
             vision_result = describe_scene()
         except Exception:
             LOGGER.exception("vision describe_scene failed")
-            vision_result = []
+            vision_result = {"error": "VISION_ERROR"}
 
     return build_response(intent, vision_result)
 

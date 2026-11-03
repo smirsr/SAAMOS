@@ -27,6 +27,8 @@ Each module is a Python function with a defined input and output so everyone can
 - Camera index and audio device are never hardcoded. They come from one shared configuration file, with default devices as a fallback. The hardware/deployment owner maintains it.
 - Dependencies are recorded with versions; use a virtual environment where supported.
 - Every module ships with a standalone test (e.g. `tests/test_intent_parser.py`) so it can be checked without the other modules.
+- Object names sent to vision must be labels the vision module supports. The list lives in `saam/core/object_labels.txt`, maintained with the vision owner.
+- The prototype starts with rule-based parsing and mock vision. The SLM is optional.
 
 
 ## 1. Audio module (speech recognition)
@@ -93,8 +95,8 @@ Supported intents:
 
 **Function:** `describe_scene() -> List[Dict]`
 - Input: none
-- Output: list of detections, each in the same format as above
-- Empty list if nothing is detected or on error
+- Output: list of detections, each in the same format as above. An empty list means the camera worked and nothing was detected.
+- On camera or model error: return `{"error": "CAMERA_UNAVAILABLE"}` (raising an exception also works). Never return an empty list for a failure.
 
 ## 4. Response generation
 **Owner:** Arianna
@@ -118,6 +120,13 @@ Rules, since users hear responses rather than read them:
 - Output: spoken audio
 - The speech engine (for example eSpeak NG or Piper) is hidden inside this module so it can be swapped without affecting other code.
 - On failure: log the error and print the text to the console.
+
+## STOP and the audio loop (proposed)
+- The audio module (leader) provides `stop_speaking() -> None`, which immediately cuts off speech that is playing.
+- The controller calls it when it hears STOP: `handle_command(text, on_stop=stop_speaking)`. The controller never touches the speaker or microphone.
+- For STOP to work while the system is talking, the audio module must keep listening during playback (for example, play speech in the background). How is up to the audio owner.
+- Main loop: `recognize_speech()` -> `handle_command(...)` -> `speak(reply)`, then back to listening.
+- If `stop_speaking()` fails, the controller still returns its confirmation and logs the error.
 
 ## Error handling rules
 - Modules never crash the pipeline. They return the failure values above.

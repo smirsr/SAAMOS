@@ -5,8 +5,13 @@ Responses are heard, not read, so they are short and plain.
 Inputs (see docs/integration-guide.md):
     intent        {"intent": "FIND_OBJECT", "target": "bottle"}
     vision_result FIND_OBJECT    -> dict from detect_object()
-                  DESCRIBE_SCENE -> list of dicts from describe_scene()
+                  DESCRIBE_SCENE -> list of dicts from describe_scene(), or a
+                                    dict with an "error" key if the camera failed
                   STOP/UNKNOWN   -> None
+
+An empty list from describe_scene() means the camera worked and saw nothing.
+A camera or model failure is reported as {"error": "..."} and is never
+described as an empty scene.
 """
 
 from typing import Dict, List, Optional
@@ -51,8 +56,15 @@ def _article(word: str) -> str:
     return "an" if word[:1].lower() in "aeiou" else "a"
 
 
+def unsupported_object_response(target: str) -> str:
+    """Said when vision has no label for the requested object."""
+    return "Sorry, I can't look for {} {} yet.".format(_article(target), target)
+
+
 def _find_response(target: str, detection) -> str:
-    if isinstance(detection, dict) and detection.get("error"):
+    # Anything that is not a proper detection dict, or that carries an error,
+    # means vision failed. Do not say the object is missing in that case.
+    if not isinstance(detection, dict) or detection.get("error"):
         return CAMERA_MESSAGE
     if not is_confident_detection(detection):
         return "I couldn't find your {}.".format(target)
@@ -63,8 +75,10 @@ def _find_response(target: str, detection) -> str:
 
 
 def _scene_response(detections) -> str:
+    # A list (even an empty one) is a successful scan. Anything else, such as
+    # {"error": "CAMERA_UNAVAILABLE"}, None or garbage, means vision failed.
     if not isinstance(detections, list):
-        detections = []
+        return CAMERA_MESSAGE
     seen = [d for d in detections if is_confident_detection(d)]
     seen.sort(key=_confidence, reverse=True)
     parts = []

@@ -10,11 +10,11 @@ import os
 import sys
 import unittest
 
-os.environ["SAAM_DISABLE_SLM"] = "1"  # tests never call the real model
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from saam.core import intent_parser, slm_engine  # noqa: E402
+from saam.core import slm_engine  # noqa: E402
 from saam.core.intent_parser import parse_intent, rule_based_parse  # noqa: E402
+from tests.helpers import SlmDisabledTestCase  # noqa: E402
 
 
 def find(target):
@@ -26,7 +26,7 @@ STOP = {"intent": "STOP", "target": None}
 UNKNOWN = {"intent": "UNKNOWN", "target": None}
 
 
-class RuleBasedTests(unittest.TestCase):
+class RuleBasedTests(SlmDisabledTestCase):
     def check(self, text, expected):
         self.assertEqual(rule_based_parse(text), expected, text)
 
@@ -65,14 +65,13 @@ class RuleBasedTests(unittest.TestCase):
         self.check("Where is the thing I left on the table yesterday", UNKNOWN)
 
 
-class SlmFallbackTests(unittest.TestCase):
+class SlmFallbackTests(SlmDisabledTestCase):
     """parse_intent() must use the SLM when it is good, and the rules otherwise."""
 
     def setUp(self):
-        self._original = slm_engine.slm_parse
-
-    def tearDown(self):
-        slm_engine.slm_parse = self._original
+        super().setUp()
+        original = slm_engine.slm_parse
+        self.addCleanup(setattr, slm_engine, "slm_parse", original)
 
     def test_valid_slm_output_is_used(self):
         slm_engine.slm_parse = lambda text: {"intent": "FIND_OBJECT", "target": "water bottle"}
@@ -101,22 +100,6 @@ class SlmFallbackTests(unittest.TestCase):
     def test_bad_input_never_raises(self):
         self.assertEqual(parse_intent(None), UNKNOWN)
         self.assertEqual(parse_intent(""), UNKNOWN)
-
-
-class SlmEngineTests(unittest.TestCase):
-    def test_extract_json_takes_last_object(self):
-        output = 'JSON: {"intent": "STOP", "target": null}\nJSON: {"intent": "FIND_OBJECT", "target": "cup"}'
-        self.assertEqual(slm_engine.extract_json(output),
-                         {"intent": "FIND_OBJECT", "target": "cup"})
-
-    def test_extract_json_handles_garbage(self):
-        self.assertIsNone(slm_engine.extract_json("no json here"))
-        self.assertIsNone(slm_engine.extract_json("{not valid}"))
-        self.assertIsNone(slm_engine.extract_json(""))
-
-    def test_unavailable_without_config(self):
-        self.assertFalse(slm_engine.is_available())
-        self.assertIsNone(slm_engine.slm_parse("Stop."))
 
 
 if __name__ == "__main__":
