@@ -212,20 +212,32 @@ def test_detect_object_model_error():
     assert r["error"] == "model_error"
  
  
-def test_describe_scene():
-    dets = BOTTLE_RIGHT + [{"object": "cup", "confidence": 0.6, "position": "left", "box": (0, 0, 1, 1)}]
+def test_describe_scene_returns_list_sorted_by_confidence():
+    dets = [{"object": "cup", "confidence": 0.6, "position": "left", "box": (0, 0, 1, 1)}] + BOTTLE_RIGHT
     r = make_service([blank()], StubDetector(dets)).describe_scene()
-    assert r["count"] == 2 and r["objects"][0]["object"] == "bottle"
+    assert isinstance(r, list)
+    assert r == [{"object": "bottle", "position": "right", "confidence": 0.8},
+                 {"object": "cup", "position": "left", "confidence": 0.6}]
+ 
+ 
+def test_describe_scene_empty_scan_returns_empty_list():
+    r = make_service([blank()], StubDetector([])).describe_scene()
+    assert r == [] and isinstance(r, list)
  
  
 def test_describe_scene_camera_error():
     r = make_service([], StubDetector(), opened=False).describe_scene()
-    assert r == {"objects": [], "count": 0, "error": "camera_error"}
+    assert r == {"error": "camera_error"}
+ 
+ 
+def test_describe_scene_model_error():
+    r = make_service([blank()], StubDetector(error=ModelLoadError("x"))).describe_scene()
+    assert r == {"error": "model_error"}
  
  
 def test_module_level_functions_use_configured_service():
     configure(make_service([blank(), blank()], StubDetector(BOTTLE_RIGHT)))
     assert detect_object("bottle")["detected"] is True
-    assert describe_scene()["count"] == 1
+    assert len(describe_scene()) == 1
     configure(None)
  
