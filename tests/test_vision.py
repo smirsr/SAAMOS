@@ -216,8 +216,8 @@ def test_describe_scene_returns_list_sorted_by_confidence():
     dets = [{"object": "cup", "confidence": 0.6, "position": "left", "box": (0, 0, 1, 1)}] + BOTTLE_RIGHT
     r = make_service([blank()], StubDetector(dets)).describe_scene()
     assert isinstance(r, list)
-    assert r == [{"object": "bottle", "position": "right", "confidence": 0.8},
-                 {"object": "cup", "position": "left", "confidence": 0.6}]
+    assert r == [{"object": "bottle","detected": True, "position": "right","confidence": 0.8},
+                 {"object": "cup","detected": True, "position": "left", "confidence": 0.6}]
  
  
 def test_describe_scene_empty_scan_returns_empty_list():
