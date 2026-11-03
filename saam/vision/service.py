@@ -63,7 +63,8 @@ class VisionService:
             return {"error": "camera_error"}
         except ModelLoadError:
             return {"error": "model_error"}
-        return [{"object": d["object"], "position": d["position"],
+        return [{"object": d["object"],"detected": True,
+                  "position": d["position"],
                  "confidence": round(d["confidence"], 3)}
                 for d in sorted(detections, key=lambda d: -d["confidence"])]
  
