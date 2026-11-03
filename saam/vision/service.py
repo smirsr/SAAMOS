@@ -55,16 +55,17 @@ class VisionService:
         return _result(name, True, best["position"], best["confidence"])
  
     def describe_scene(self):
+        """Success: list of {'object','position','confidence'} ([] if nothing found).
+        Failure: dict with an 'error' key ('camera_error' or 'model_error')."""
         try:
             detections = self.detector.detect(self._grab())
         except CameraError:
-            return {"objects": [], "count": 0, "error": "camera_error"}
+            return {"error": "camera_error"}
         except ModelLoadError:
-            return {"objects": [], "count": 0, "error": "model_error"}
-        objs = [{"object": d["object"], "position": d["position"],
+            return {"error": "model_error"}
+        return [{"object": d["object"], "position": d["position"],
                  "confidence": round(d["confidence"], 3)}
                 for d in sorted(detections, key=lambda d: -d["confidence"])]
-        return {"objects": objs, "count": len(objs)}
  
     def close(self):
         self._ready = False
@@ -93,4 +94,3 @@ def detect_object(target):
  
 def describe_scene():
     return get_service().describe_scene()
- 
