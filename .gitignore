@@ -1,3 +1,7 @@
+# Downloaded speech recognition models
+# These files are installed locally rather than saved in GitHub.
+models/vosk-model-*/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
