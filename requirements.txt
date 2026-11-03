@@ -1,0 +1,3 @@
+opencv-python
+ai-edge-litert
+numpy
