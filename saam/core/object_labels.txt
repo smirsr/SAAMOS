@@ -1,0 +1,3 @@
+# Object labels the vision module can detect, one per line, lowercase.
+# Paste the label list from the vision owner (teammate 1) below this line.
+# While there are no labels here, every spoken object name is passed to vision.
