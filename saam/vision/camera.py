@@ -1,9 +1,10 @@
 import cv2 as cv
 
 class CameraSystem:
-    def __init__(self, camera):
+    def __init__(self, camera, key):
         self.CameraNumber = camera
         self.Camera = 0
+        self.Key = key
 
     def intialize_camera(self):
         self.Camera = cv.VideoCapture(self.CameraNumber)
@@ -11,12 +12,14 @@ class CameraSystem:
     def get_frame(self):
         ret, frame = self.Camera.read()
         true_frame = cv.flip(frame, 1)
-        cv.imshow("Frame", true_frame)
 
-        if cv.waitKey(0) & 0xFF == ord('n'):
+        return (ret, true_frame)
+
+    def display_frame(self, frame):
+        cv.imshow("Displaying Frame", frame)
+
+        if cv.waitKey(0) & 0xFF == ord(self.Key):
             return
-
-        return (ret, frame)
 
     def destroy_camera(self):
         self.Camera.release()
