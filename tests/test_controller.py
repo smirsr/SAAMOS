@@ -113,8 +113,15 @@ class CameraErrorTests(SlmDisabledTestCase):
             raise RuntimeError("camera exploded")
         self.assertEqual(self.ask("Where is my cup?", detect=broken), CAMERA_REPLY)
 
-    def test_find_bad_return_value(self):
+    def test_find_none_means_not_in_view_not_a_camera_error(self):
+        # The agreed vision format returns None when the object is simply not there.
         self.assertEqual(self.ask("Where is my cup?", detect=lambda target: None),
+                         "I couldn't find your cup.")
+
+    def test_find_garbage_return_value_is_a_camera_error(self):
+        self.assertEqual(self.ask("Where is my cup?", detect=lambda target: "garbage"),
+                         CAMERA_REPLY)
+        self.assertEqual(self.ask("Where is my cup?", detect=lambda target: 42),
                          CAMERA_REPLY)
 
     def test_describe_error_dict(self):

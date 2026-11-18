@@ -49,12 +49,18 @@ MAX_TIMEOUT_S = 60.0
 DEFAULT_EXTRA_ARGS = ["--no-display-prompt"]
 MAX_NEW_TOKENS = 48
 
+# Kept short on purpose: prompt processing is slow on the board's CPU, so every
+# extra example costs time. The rule-based parser remains the default.
 PROMPT_TEMPLATE = """You turn a spoken command into JSON.
-Intents: FIND_OBJECT (needs a target object name), DESCRIBE_SCENE, STOP, UNKNOWN.
+Intents: FIND_OBJECT (answer once about an object), START_FIND (keep looking for an object), STOP_FIND, START_SCAN, STOP_SCAN, COUNT_OBJECTS (how many of an object), DESCRIBE_SCENE, READ_TEXT, REPEAT, STOP, UNKNOWN.
 Reply with the JSON only.
 
 Command: Where is my water bottle?
 JSON: {"intent": "FIND_OBJECT", "target": "bottle"}
+Command: Find my bottle
+JSON: {"intent": "START_FIND", "target": "bottle"}
+Command: How many cups do you see?
+JSON: {"intent": "COUNT_OBJECTS", "target": "cup"}
 Command: What objects are in front of me?
 JSON: {"intent": "DESCRIBE_SCENE", "target": null}
 Command: Stop.
