@@ -43,7 +43,13 @@ class VisionService:
     def detect_object(self, target):
         name = normalize_target(target)
         try:
-            detections = self.detector.detect(self._grab())
+            frame = self._grab()
+            if isinstance(self.detector, ObjectDetector):
+                detections = self.detector.detect(
+                    frame, min_confidence=0.25
+                )
+            else:
+                detections = self.detector.detect(frame)
         except CameraError:
             return _result(name, False, error="camera_error")
         except ModelLoadError:

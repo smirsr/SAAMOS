@@ -63,26 +63,27 @@ def main():
                 # Convert the same detections into the
                 # format Ari's controller expects.
                 
-# Convert the detected objects into the format
-# Ari's controller expects.
-#
-# The detector already filtered out objects below
-# its confidence threshold, so objects in this
-# list are considered successfully detected.
-#
-# We need "detected": True because the response
-# builder checks this field before describing
-# an object to the user.
 
-scene = [
-    {
-        "object": item["object"],
-        "detected": True,
-        "position": item["position"],
-        "confidence": item["confidence"]
-    }
-    for item in detections
-]
+                # Convert detected objects into the format
+                # that Ari's controller expects.
+                #
+                # The detector already filtered objects
+                # below its confidence threshold.
+                #
+                # We include "detected": True because the
+                # controller checks this before describing
+                # an object to the user.
+
+                scene = [
+                    {
+                        "object": item["object"],
+                        "detected": True,
+                        "position": item["position"],
+                        "confidence": item["confidence"]
+                    }
+                    for item in detections
+                ]
+
 
 
                 # Pass the captured scene to the controller.
