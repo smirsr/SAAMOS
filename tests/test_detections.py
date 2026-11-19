@@ -194,7 +194,7 @@ class ModesWithAgreedFormatTests(SlmDisabledTestCase):
         vision.add("book", "left")
         self.assertEqual([controller.tick(), controller.tick()], [None, "A book appeared on the left."])
         vision.remove("cup")
-        self.assertEqual([controller.tick(), controller.tick()], [None, "The cup is gone."])
+        self.assertEqual([controller.tick(), controller.tick()], [None, "The cup is out of sight."])
 
     def test_counting_from_the_scene_uses_labels(self):
         vision = MockVision([det("bottle", "left"), det("bottle", "right"), det("cup", "center")])

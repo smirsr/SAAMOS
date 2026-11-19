@@ -199,7 +199,7 @@ def scan_changes_message(previous: Dict[str, int], current: Dict[str, int],
         sentences.append("{} {} appeared{}.".format(
             _article(label).capitalize(), label, " " + phrase if phrase else ""))
     for label in sorted(l for l in previous if l not in current):
-        sentences.append("The {} is gone.".format(label))
+        sentences.append("The {} is out of sight.".format(label))
     for label in sorted(l for l in current if l in previous and current[l] != previous[l]):
         sentences.append("Now I see {} {}.".format(current[label], plural(label, current[label])))
     return " ".join(sentences[:MAX_SCENE_OBJECTS])

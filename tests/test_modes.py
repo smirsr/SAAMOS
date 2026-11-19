@@ -311,7 +311,7 @@ class ScanModeTests(SlmDisabledTestCase):
         h.say("Scan my surroundings")
         h.ticks(1)
         h.vision.remove("cup")
-        self.assertEqual(h.ticks(2), [None, "The cup is gone."])
+        self.assertEqual(h.ticks(2), [None, "The cup is out of sight."])
 
     def test_reports_a_count_change(self):
         h = Harness()
