@@ -1,4 +1,5 @@
 opencv-python
 ai-edge-litert
 numpy
-pytestvosk
+pytest
+vosk
