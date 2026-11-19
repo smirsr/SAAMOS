@@ -154,7 +154,7 @@ The application connects speech recognition, controller logic, object detection,
 - "What do you see?"
 - "Scan the scene."
 - "Repeat."
-- "Stop."
+- "Can you stop."
 
 Recognition accuracy and available responses depend on the camera view, supported model categories, and environment.
 
