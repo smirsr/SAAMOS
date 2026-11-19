@@ -110,12 +110,12 @@ def main():
                 ).lower()
                 now = time.monotonic()
 
-                if "find" in mode_name:
+                if (
+                    "find" in mode_name
+                    and getattr(controller, "_find_state", None) is None
+                ):
                     if now - last_find_update >= 15:
-                        print(
-                            "\nSAAMOS: Still searching...",
-                            flush=True
-                        )
+                        say_response("I'm still searching.")
                         last_find_update = now
                 else:
                     last_find_update = now
