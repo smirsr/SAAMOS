@@ -571,7 +571,10 @@ class ModeController:
             return self._note_vision_error()
         self._vision_errors = 0
         observed = None                                # None = not currently seen
-        if rb.is_confident_detection(result):
+        # Find Mode uses a lower threshold than Scan Mode.
+        # We only consider the requested object, and the
+        # existing confirmation logic checks repeated frames.
+        if result.get("detected") and result.get("confidence", 0) >= 0.25:
             observed = result.get("position") or "unknown"
         previous = self._find_state
         self._find_state, self._find_pending, changed = _debounced(

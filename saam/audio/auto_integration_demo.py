@@ -9,6 +9,7 @@
 import os
 import select
 import sys
+import time
 
 # Use our offline rule-based command parser.
 os.environ["SAAM_DISABLE_SLM"] = "1"
@@ -45,8 +46,10 @@ def main():
         print("\nSAAMOS is listening...")
 
         try:
-            # Record five seconds of microphone audio.
-            audio = record_audio(duration=5)
+            # On the TI board, device 1 is our USB webcam microphone.
+            # Keep the Mac's default microphone for local testing.
+            microphone_device = 1 if sys.platform.startswith("linux") else None
+            audio = record_audio(duration=5, device=microphone_device)
 
             # Convert the recorded audio into words.
             text = speech_to_text(audio, model)
@@ -75,6 +78,9 @@ def main():
         start_listening=listen_once,
         settings=ModeSettings(confirm_ticks=3),
     )
+    # Track when we last gave a search progress update.
+
+    last_find_update = time.monotonic()
 
     print("\nSAAMOS is ready!")
     print("Find and Scan now update automatically.")
@@ -98,6 +104,22 @@ def main():
             if not ready:
                 # Automatically update Find or Scan Mode.
                 controller.tick()
+
+                mode_name = getattr(
+                    controller.mode, "value", str(controller.mode)
+                ).lower()
+                now = time.monotonic()
+
+                if "find" in mode_name:
+                    if now - last_find_update >= 15:
+                        print(
+                            "\nSAAMOS: Still searching...",
+                            flush=True
+                        )
+                        last_find_update = now
+                else:
+                    last_find_update = now
+
                 continue
 
             # Read the command entered in the terminal.
