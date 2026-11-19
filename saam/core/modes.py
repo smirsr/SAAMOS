@@ -597,7 +597,9 @@ class ModeController:
             self._scene = snapshot
             return rb.build_response({"intent": "DESCRIBE_SCENE", "target": None}, result)
         previous = self._scene
-        self._scene, self._scene_pending, changed = _debounced(
+        # Confirm each object independently.
+        from saam.core.scan_stability import debounce_scene_counts
+        self._scene, self._scene_pending, changed = debounce_scene_counts(
             self._scene, self._scene_pending, snapshot, self._settings.confirm_ticks)
         if not changed:
             return None

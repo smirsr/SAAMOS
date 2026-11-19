@@ -18,7 +18,7 @@ from saam.audio.stt import load_model, speech_to_text
 from saam.audio.tts import speak
 from saam.audio.feedback import play_cue
 
-from saam.core.modes import ModeController
+from saam.core.modes import ModeController, ModeSettings
 from saam.vision.service import VisionService
 
 
@@ -73,6 +73,7 @@ def main():
         vision=vision,
         speak=say_response,
         start_listening=listen_once,
+        settings=ModeSettings(confirm_ticks=3),
     )
 
     print("\nSAAMOS is ready!")
